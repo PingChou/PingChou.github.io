@@ -5,9 +5,13 @@
 	<meta name="viewport" content="width=400">
 	<title> PingChou </title>
 <style type="text/css">
-body {
+* {
 	margin: 0;
 	padding: 0;
+}
+body,html {
+	height: 100%;
+	overflow: hidden;
 	background-color: #999999;
 }
 
@@ -23,18 +27,35 @@ h1 {
 	width: 100px;
 	height: 40px;
 }
+.box {
+	width:100%;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: wrap;
+	
+}
+.box img {
+	width: 40px;
+	height: 40px;
+}
 </style>
 </head>
 <body>
-<h1>手写毛笔字效果-手机版</h1>
+<!-- <h1>手写毛笔字效果-手机版</h1> -->
 <canvas id="canvasId" width="400" height="400"></canvas><br />
 <input type="button" value="全部清除" class="button" onclick="hw.clear();" />
 <input type="button" value="清除最后一笔" class="button" onclick="hw.historyBack();" />
+<button class="button" onclick="hw.createImg();">生成图片</button>
+<div class="box" id="box">
+	
+</div>
 <script type="text/javascript">
+	var box = document.getElementById('box');
+	box.style.height = document.body.clientHeight - 500;
 	function Handwriting(id) {
 		this.canvas = document.getElementById(id);
 		this.ctx = this.canvas.getContext("2d");
-		this.ctx.fillStyle = "rgba(0,0,0,0.25)";
+		this.ctx.fillStyle = "rgba(0,0,0,0.5)";
 		this.canvas.addEventListener("touchstart", this.downEvent.bind(this), false);
 		this.canvas.addEventListener("touchmove", this.moveEvent.bind(this), false);
 		this.canvas.addEventListener("touchend", this.upEvent.bind(this), false);
@@ -54,12 +75,28 @@ h1 {
 		this.smoothness = 80;
 		this.history = [];
 	}
+	Handwriting.prototype.createImg = function() {
+		var canvas = this.canvas;
+		var url = canvas.toDataURL();
+		console.log(url)
+		canvas.toBlob(function(blob) {
+		    var newImg = document.createElement("img"),
+		        url = URL.createObjectURL(blob);
+		    newImg.onload = function() {
+		        URL.revokeObjectURL(url);
+		    };
+		    newImg.src = url;
+		    console.log(newImg);
+		    //从这里调用接口把图片传给后台
+		    box.appendChild(newImg);
+		 });
+		this.clear();
+	}
 
 	Handwriting.prototype.clear = function () {
 		this.history = [];
 		this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
 	}
-
 	Handwriting.prototype.historyBack = function () {
 		this.history.pop();
 		this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
